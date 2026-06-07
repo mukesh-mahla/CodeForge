@@ -1,0 +1,12 @@
+{
+  "name": "nightcode",
+  "version": "1.0.0",
+  "scripts": {
+    "cli:dev": "bun run --watch packages/cli/src/index.tsx",
+    "server:dev": "bun run --watch packages/server/src/index.ts"
+  },
+  "workspaces": ["packages/*"],
+  "dependencies": {
+    "@types/react": "^19.2.17"
+  }
+}
