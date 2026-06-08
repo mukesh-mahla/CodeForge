@@ -3,6 +3,7 @@ import { useKeyboard } from "@opentui/react";
 import {  useMemo, useRef, useState, type RefObject } from "react";
 import { FilterCommand } from "./filter-command";
 import type { commandType } from "./types";
+import { useKeyboardContext } from "../provider/keyboard";
 
 type useCommandMenuReturnType = {
   showMenu: boolean;
@@ -19,7 +20,7 @@ export function useCommandMenu(): useCommandMenuReturnType {
   const [textValue, setTextvalue] = useState("");
   const [selectedIndex, setselectedIndex] = useState(0);
   const scrollRef = useRef<ScrollBoxRenderable | null>(null);
-
+const {push,pop,isTop} = useKeyboardContext()
   const commandQuery =
     showMenu && textValue.startsWith("/") ? textValue.slice(1) : "";
 
@@ -29,10 +30,11 @@ export function useCommandMenu(): useCommandMenuReturnType {
   );
 
   useKeyboard((key) => {
-    if(!showMenu) return
+    if(!showMenu || !isTop("command")) return
     if(key.name === "escape"){
         key.preventDefault()
         setShowMenu(false)
+        pop("command")
     }
     if (key.name === "up" && showMenu) {
         key.preventDefault()
@@ -84,14 +86,21 @@ export function useCommandMenu(): useCommandMenuReturnType {
     const isCommand = text.startsWith("/") ? text.slice(1) : null;
     if (isCommand !== null && !isCommand.includes(" ")) {
       setShowMenu(true);
+      push("command",()=>{
+        setShowMenu(false)
+        pop("command")
+        return true
+      })
     } else {
       setShowMenu(false);
+      pop("command")
     }
   };
   const resolveCommand = (index: number): commandType | undefined => {
     const cmd = filteredCommand[index];
     if (cmd) {
       setShowMenu(false);
+      pop("command")
     }
     return cmd;
   };

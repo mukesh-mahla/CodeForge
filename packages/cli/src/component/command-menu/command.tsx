@@ -3,12 +3,19 @@ export const COMMANDS:commandType[] = [
     {
         name:"new",
         description:"start a new chat",
-        value:"/new"
+        value:"/new",
+        action:(ctx)=>{
+            ctx.toast.show({message:"starting a new conversation"})
+            
+        }
     },
     {
         name:"agents",
         description:"switch agent",
-        value:"/agents"
+        value:"/agents",
+        action:(ctx)=>{
+            ctx.dialog.open({title:"Select Agent",children:<text>Agent selection coming soon ...</text>})
+        }
     },
     {
         name:"theme",
@@ -18,7 +25,10 @@ export const COMMANDS:commandType[] = [
     {
         name:"models",
         description:"Select AI model for generation",
-        value:"/models"
+        value:"/models",
+        action:(ctx)=>{
+            ctx.dialog.open({title:"select model",children:<text>models coming soon...</text>})
+        }
     },
     {
         name:"session",

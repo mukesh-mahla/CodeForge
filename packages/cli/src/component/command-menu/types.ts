@@ -1,6 +1,11 @@
+import type { DialogContextValue } from "../provider/dialog"
+import type { DialogConfig } from "../provider/dialog/types"
+import type { ToastContextValue } from "../provider/toast"
 
 export type contextType = {
     exit:()=>void
+    toast:ToastContextValue
+    dialog:DialogContextValue
 }
 
 
