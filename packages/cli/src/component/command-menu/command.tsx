@@ -1,3 +1,4 @@
+import { ThemeDialogContent } from "../dialogs"
 import { type commandType } from "./types"
 export const COMMANDS:commandType[] = [
     {
@@ -20,7 +21,10 @@ export const COMMANDS:commandType[] = [
     {
         name:"theme",
         description:"Change color theme",
-        value:"/logout"
+        value:"/theme",
+        action:(ctx)=>{
+            ctx.dialog.open({title:"select theme",children:<ThemeDialogContent/>})
+        }
     },
     {
         name:"models",
@@ -35,11 +39,7 @@ export const COMMANDS:commandType[] = [
         description:"Browse past session",
         value:"/session"
     },
-    {
-        name:"theme",
-        description:"Change color theme",
-        value:"/logout"
-    },
+    
     {
         name:"login",
         description:"Signin to your account",

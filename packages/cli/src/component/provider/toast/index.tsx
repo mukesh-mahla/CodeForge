@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
 import { DEFAULT_TOAST_DURATION, type ToastOptions, type ToastVarient } from "./type";
 import { useTerminalDimensions } from "@opentui/react";
+import { useTheme } from "../theme";
 
 
 
@@ -62,13 +63,13 @@ type ToastProps = {
 }
 
 function Toast({ currentToast }: ToastProps) {
-
+const {colors} = useTheme()
     const { width } = useTerminalDimensions()
     if (!currentToast) return null
     const varientColor: Record<ToastVarient, string> = {
-        success: "#82E0AA",
-        error: "#E74C5E",
-        info: "#56D6C2"
+        success: colors.success,
+        error: colors.error,
+        info: colors.info
     }
 
     const borderColor = currentToast.varient ? varientColor[currentToast.varient] : varientColor.info
@@ -84,7 +85,7 @@ function Toast({ currentToast }: ToastProps) {
             paddingLeft={2}
             paddingRight={2}
             paddingTop={1}
-            backgroundColor={"#1c1b1c"}
+            backgroundColor={colors.surface}
             borderColor={borderColor}
             border={["left", "right"]}
         >

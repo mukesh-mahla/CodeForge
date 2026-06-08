@@ -7,6 +7,7 @@ import type { commandType } from "./command-menu/types"
 import { useToast } from "./provider/toast"
 import { useKeyboardContext } from "./provider/keyboard"
 import { useDialog } from "./provider/dialog"
+import { useTheme } from "./provider/theme"
 
 
 
@@ -24,6 +25,7 @@ export const TEXTAREA_KEYBINDINGS: KeyBinding[] = [
 ]
 
 export function Input({ disabled = false, onSubmit }: inputProps) {
+    const {colors} = useTheme()
     const textArearef = useRef<TextareaRenderable>(null)
     const onSubmitRef = useRef<() => void>(() => { })
     const renderer = useRenderer()
@@ -106,14 +108,14 @@ const dialog = useDialog()
 
 
     return <box alignItems="center" width={"100%"}>
-        <box border={["left"]} borderColor={"green"} borderStyle="heavy" width={"100%"} >
-            <box position="relative" justifyContent="center" backgroundColor={"#191819"} gap={1} width={"100%"} paddingX={2} paddingY={1} >
+        <box border={["left"]} borderColor={colors.primary} borderStyle="heavy" width={"100%"} >
+            <box position="relative" justifyContent="center" backgroundColor={colors.surface} gap={1} width={"100%"} paddingX={2} paddingY={1} >
                 {showMenu && (
                     <box position="absolute"
                         bottom={"100%"}
                         left={0}
                         width={"100%"}
-                        backgroundColor={"#191819"}
+                        backgroundColor={colors.surface}
                         zIndex={10}
                     >
                         <CommandMenu query={CommandQuery} selectedIndex={selectedIndex} scrollRef={scrollRef} onSelect={setselectedIndex} onExecute={handleCommandExecute} />
@@ -131,9 +133,10 @@ const dialog = useDialog()
 
 
 function Statusbar() {
+    const {colors} = useTheme()
     return <box flexDirection="row" gap={1}   >
-        <text fg={"green"}>Build</text>
+        <text fg={colors.primary}>Build</text>
         <text>&gt;</text>
-        <text attributes={TextAttributes.DIM}>opus-4-6</text>
+        <text attributes={TextAttributes.DIM}  fg={colors.dimSeparator}>opus-4-6</text>
     </box>
 }

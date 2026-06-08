@@ -6,34 +6,41 @@ import { CommandMenu } from "./component/command-menu";
 import { ToastProvider } from "./component/provider/toast";
 import { KeyboardProvider } from "./component/provider/keyboard";
 import { DialogProvider } from "./component/provider/dialog";
+import { ThemeProvider, useTheme } from "./component/provider/theme";
+
+function ThemeRoot(){
+  const {colors} = useTheme()
+return ( <box alignItems="center" backgroundColor={colors.background} justifyContent="center" gap={2} width="100%" height="100%">
+
+            <Header />
+            <box width={"100%"} maxWidth={80}>
+
+              <Input onSubmit={() => { }} />
+            </box>
+
+          </box>)
+}
 
 function App() {
 
 
   return (
     <KeyboardProvider>
+      <ThemeProvider>
       <DialogProvider>
         <ToastProvider>
-      <box alignItems="center" backgroundColor={	"#1c1b1c"} justifyContent="center" gap={2} width="100%" height="100%">
-
-      <Header />
-      <box width={"100%"} maxWidth={80}>
-       
-        <Input  onSubmit={()=>{}}/>
-      </box>
-
-    </box>
-    </ToastProvider>
+         <ThemeRoot/>
+        </ToastProvider>
       </DialogProvider>
-      
+</ThemeProvider>
     </KeyboardProvider>
-    
-    
+
+
   );
 }
 
 const renderer = await createCliRenderer({
-  targetFps:60,
-  exitOnCtrlC:false
+  targetFps: 60,
+  exitOnCtrlC: false
 });
 createRoot(renderer).render(<App />);
