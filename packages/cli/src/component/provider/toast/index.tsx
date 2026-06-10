@@ -30,6 +30,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
         if (timeoutHandleRef.current) {
             clearTimeout(timeoutHandleRef.current)
             timeoutHandleRef.current = null
+            
         }
 
     }, [])
@@ -65,7 +66,9 @@ type ToastProps = {
 function Toast({ currentToast }: ToastProps) {
 const {colors} = useTheme()
     const { width } = useTerminalDimensions()
+
     if (!currentToast) return null
+
     const varientColor: Record<ToastVarient, string> = {
         success: colors.success,
         error: colors.error,

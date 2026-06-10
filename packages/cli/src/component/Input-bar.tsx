@@ -136,7 +136,7 @@ function Statusbar() {
     const {colors} = useTheme()
     return <box flexDirection="row" gap={1}   >
         <text fg={colors.primary}>Build</text>
-        <text>&gt;</text>
+        <text>{">"}</text>
         <text attributes={TextAttributes.DIM}  fg={colors.dimSeparator}>opus-4-6</text>
     </box>
 }
