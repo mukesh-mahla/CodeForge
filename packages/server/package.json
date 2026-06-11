@@ -1,9 +1,16 @@
 {
   "name": "@nightcode/server",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
     "dev": "bun run --hot src/index.ts"
   },
   "dependencies": {
+    "@ai-sdk/google": "^3.0.80",
+    "ai": "^6.0.201",
     "hono": "^4.12.23"
   },
   "devDependencies": {

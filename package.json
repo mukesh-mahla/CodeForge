@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "cli:dev": "bun run --watch packages/cli/src/index.tsx",
-    "server:dev": "bun run --watch packages/server/src/index.ts"
+    "server:dev": "bun run --hot packages/server/src/index.ts"
   },
   "workspaces": ["packages/*"],
   "dependencies": {

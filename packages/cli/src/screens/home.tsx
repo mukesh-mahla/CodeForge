@@ -1,30 +1,38 @@
 import { useNavigate } from "react-router";
 import { Header } from "../component/header";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { Input } from "../component/Input-bar";
+import { useChat } from "../usechat";
 
 
-export function Home(){
+export function Home() {
     const navigate = useNavigate()
+    const [datar, setDatar] = useState("")
 
-    const handleSubmit = useCallback((text:string)=>{
-        navigate("/sessions/new",{state:{message:text}})
-    },[navigate])
+    const handleData = (text:string)=>{
+       setDatar(prev=>prev+text)
+    }
+
+    const handleSubmit = useCallback(async (text: string) => {
+        useChat({onData:handleData})
+        // navigate("/sessions/new",{state:{message:result}})
+    }, [navigate])
 
     return (
         <box
-        alignItems="center"
-        justifyContent="center"
-        position="relative"
-        width={"100%"}
-        height={"100%"}
-        flexGrow={1}
-        gap={2}
+            alignItems="center"
+            justifyContent="center"
+            position="relative"
+            width={"100%"}
+            height={"100%"}
+            flexGrow={1}
+            gap={2}
         >
-<Header/>
-<box width={"100%"} maxWidth={90} paddingX={2}>
-<Input onSubmit={handleSubmit} />
-</box>
+            <Header />
+            <box width={"100%"} maxWidth={90} paddingX={2}>
+                <Input onSubmit={handleSubmit} />
+            </box>
+            <text>{datar}</text>
         </box>
     )
 }

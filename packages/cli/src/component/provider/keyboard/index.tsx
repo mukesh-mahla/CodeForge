@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useRef, useState, type ReactNod
 type Responder = () => boolean
 
 type keyboardcontextvalue = {
-    push: (id: string,responder:Responder) => void
+    push: (id: string, responder: Responder) => void
     pop: (id: string) => void
     setResponder: (id: string, responder: Responder | null) => void
     isTop: (id: string) => boolean
@@ -12,7 +12,7 @@ type keyboardcontextvalue = {
 
 const keyboardcontext = createContext<keyboardcontextvalue | null>(null)
 
-export function KeyboardProvider({children}:{children: ReactNode}) {
+export function KeyboardProvider({ children }: { children: ReactNode }) {
     const [cureentStack, setCurrentStack] = useState<string[]>(["base"])
     const responderRef = useRef<Map<string, Responder>>(new Map())
     const renderer = useRenderer()
@@ -60,15 +60,15 @@ export function KeyboardProvider({children}:{children: ReactNode}) {
         renderer.destroy()
     })
 
- return <keyboardcontext.Provider value={{push,pop,isTop,setResponder}}>
-    {children}
- </keyboardcontext.Provider>
+    return <keyboardcontext.Provider value={{ push, pop, isTop, setResponder }}>
+               {children}
+           </keyboardcontext.Provider>
 }
 
- export const useKeyboardContext = ()=>{
- const value = useContext(keyboardcontext)
- if(!value){
-    throw new Error("you must wrap your component in the keyBoard Provider")
- }
- return value
+export const useKeyboardContext = () => {
+    const value = useContext(keyboardcontext)
+    if (!value) {
+        throw new Error("you must wrap your component in the keyBoard Provider")
+    }
+    return value
 }
