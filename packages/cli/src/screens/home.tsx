@@ -9,13 +9,13 @@ export function Home() {
     const navigate = useNavigate()
     const [datar, setDatar] = useState("")
 
-    const handleData = (text:string)=>{
-       setDatar(prev=>prev+text)
-    }
+    // const handleData = (text:string)=>{
+    //    setDatar(prev=>prev+text)
+    // }
 
     const handleSubmit = useCallback(async (text: string) => {
-        useChat({onData:handleData})
-        // navigate("/sessions/new",{state:{message:result}})
+
+        navigate("/sessions/new",{state:{text}})
     }, [navigate])
 
     return (

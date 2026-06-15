@@ -10,8 +10,11 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.80",
+    "@hono/zod-validator": "^0.8.0",
+    "@nightcode/database": "workspace:*",
     "ai": "^6.0.201",
-    "hono": "^4.12.23"
+    "hono": "^4.12.23",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/bun": "latest"
