@@ -9,13 +9,12 @@ export function Home() {
     const navigate = useNavigate()
     const [datar, setDatar] = useState("")
 
-    // const handleData = (text:string)=>{
-    //    setDatar(prev=>prev+text)
-    // }
+    
 
     const handleSubmit = useCallback(async (text: string) => {
 
         navigate("/sessions/new",{state:{text}})
+        
     }, [navigate])
 
     return (
