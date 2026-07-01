@@ -3,6 +3,7 @@ import { prisma } from "@nightcode/database";
 import z from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { Role, Mode } from "@nightcode/database/enums";
+import { runLoop } from "../agent/agentloop";
 
 const CreateSessionSchema = z.object({
     title: z.string(),
@@ -24,6 +25,8 @@ const sessionRouter = new Hono()
     .post("/", CreateSessionSchemaValidator, async (c) => {
         console.log("ello")
         const { initialMessage, ...data } = c.req.valid("json")
+
+const d  = runLoop("hi vertext")        
 
         const session = await prisma.session.create({
             data: {

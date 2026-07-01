@@ -9,10 +9,9 @@
     "dev": "bun run --hot src/index.ts"
   },
   "dependencies": {
-    "@ai-sdk/google": "^3.0.80",
+    "@google/genai": "^2.10.0",
     "@hono/zod-validator": "^0.8.0",
     "@nightcode/database": "workspace:*",
-    "ai": "^6.0.201",
     "hono": "^4.12.23",
     "zod": "^4.4.3"
   },

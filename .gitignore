@@ -29,6 +29,7 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # IntelliJ based IDEs
 .idea
+direct-byte-490310-q2-259c4f3e8eaa.json
 
 # Finder (MacOS) folder config
 .DS_Store
