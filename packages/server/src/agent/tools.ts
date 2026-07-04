@@ -1,7 +1,6 @@
 import { Type } from "@google/genai";
 
 const readFile = {
-  
   name: "read_file",
   description: "read a file",
   parameters: {
@@ -17,7 +16,6 @@ const readFile = {
 };
 
 const writeFile = {
-  
   name: "write_file",
   description: "write in a file",
   parameters: {
@@ -37,9 +35,8 @@ const writeFile = {
 };
 
 const usebash = {
-  
   name: "use_bash",
-  description: "use bash for running a command",
+  description: "use bash for running a command, whichever you think is needed",
   parameters: {
     type: Type.OBJECT,
     properties: {
@@ -63,7 +60,18 @@ export async function executeFunction(name: string, args: Record<string, any>) {
     await Bun.write(args.path, args.content);
     return "written succesfully";
   } else if (name === "use_bash") {
-    const proc = Bun.spawnSync(["bash", "-c", args.command]);
+    console.log(args);
+    const proc =
+      process.platform === "win32"
+        ? Bun.spawnSync(["cmd", "/c", args.command])
+        : Bun.spawnSync(["bash", "-c", args.command]);
+    console.log(proc.stdout.toString());
+    console.log(proc.stderr.toString());
+    console.log(proc.exitCode);
+    if (proc.exitCode !== 0) {
+      return `Command failed:
+${proc.stderr.toString()}`;
+    }
     return proc.stdout.toString();
   }
   return "unknown tool";

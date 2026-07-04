@@ -17,7 +17,9 @@ export function NewSession() {
   const parsedState = messageSchema.safeParse(location.state);
 
   useEffect(() => {
-
+ 
+    console.log(process.cwd())
+    
     if (requestRef.current || !parsedState.success) return
     requestRef.current = true
     const text = parsedState.data.text

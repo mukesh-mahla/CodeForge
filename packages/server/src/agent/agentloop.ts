@@ -17,7 +17,8 @@ export async function runloop({ type, content, mode }: loop) {
       model: "gemini-2.5-flash",
       contents: messages,
       config: {
-        systemInstruction: "your a cli agent like claude code",
+        systemInstruction:
+          "your a cli agent like claude code, you might be working in a codebase or you are being used to create one , so use the tool to create and read the codebase , you are a cross-platform coding agent, if your action doesnt work then try other way ",
         tools: mode === "BUILD" ? [{ functionDeclarations: tool }] : [],
       },
     });
@@ -34,18 +35,25 @@ export async function runloop({ type, content, mode }: loop) {
       parts,
     );
 
+    messages.push({ role: "model", parts });
+    
     const functionCall = parts?.find((p) => p.functionCall);
     if (!functionCall) {
-      return parts?.find((p) => p.text)?.text;
+      break;
     }
 
     const c = functionCall.functionCall;
     const toolResult = await executeFunction(c?.name!, c?.args!);
 
-    messages.push({ role: "model", parts });
     messages.push({
       role: "user",
-      parts: [{ functionResponse: { name:c?.name ,response: { result: toolResult } } }],
+      parts: [
+        {
+          functionResponse: { name: c?.name, response: { result: toolResult } },
+        },
+      ],
     });
   }
+
+  return messages;
 }
