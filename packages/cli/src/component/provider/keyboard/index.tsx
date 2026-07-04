@@ -48,7 +48,7 @@ export function KeyboardProvider({ children }: { children: ReactNode }) {
 
 
     useKeyboard((key) => {
-        if (key.name !== "c" && key.ctrl === false) return
+        if (key.name !== "c" || key.ctrl === false) return
 
         for (let i = cureentStack.length - 1; i >= 0; i--) {
             const id = cureentStack[i]

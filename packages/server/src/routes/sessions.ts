@@ -3,7 +3,7 @@ import { prisma } from "@nightcode/database";
 import z from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { Role, Mode } from "@nightcode/database/enums";
-import { runLoop } from "../agent/agentloop";
+import { runloop } from "../agent/agentloop";
 
 const CreateSessionSchema = z.object({
     title: z.string(),
@@ -23,10 +23,9 @@ const CreateSessionSchemaValidator = zValidator("json", CreateSessionSchema, (re
 
 const sessionRouter = new Hono()
     .post("/", CreateSessionSchemaValidator, async (c) => {
-        console.log("ello")
+        
         const { initialMessage, ...data } = c.req.valid("json")
-
-const d  = runLoop("hi vertext")        
+      
 
         const session = await prisma.session.create({
             data: {
@@ -40,8 +39,11 @@ const d  = runLoop("hi vertext")
                 },
             }
         })
-        console.log("ddfhd")
+        console.log("chat created ---------------------")
+
         
+        const p = runloop(initialMessage)  
+
         return c.json({ message: "session created successfully", session }, 201)
     })
     .get("/", async (c) => {
