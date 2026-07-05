@@ -1,5 +1,6 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, type Part } from "@google/genai";
 import { executeFunction, tool } from "./tools";
+import type { Role } from "@nightcode/database/enums";
 const GEMINI_API_KEY = process.env.GOOGLE_AI_API_KEY;
 
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
@@ -10,8 +11,21 @@ interface loop {
   mode: "BUILD" | "PLAN";
 }
 
+type GeminiMessageType = {
+  role: string;
+  parts: Part[];
+};
+
+type DbMessageType = {
+  type: Role;
+  content: string;
+};
+
 export async function runloop({ type, content, mode }: loop) {
-  const messages: any[] = [{ role: "user", parts: [{ text: content }] }];
+  const messages: GeminiMessageType[] = [
+    { role: "user", parts: [{ text: content }] },
+  ];
+  const dbMessage: DbMessageType[] = [];
   while (true) {
     const result = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -28,7 +42,7 @@ export async function runloop({ type, content, mode }: loop) {
       result,
     );
 
-    const parts = result.candidates![0]?.content?.parts;
+    const parts = result.candidates![0]?.content?.parts ?? [];
 
     console.log(
       "----------------------------parts ai respone ----------------------------",
@@ -36,12 +50,13 @@ export async function runloop({ type, content, mode }: loop) {
     );
 
     messages.push({ role: "model", parts });
-    
+
     const functionCall = parts?.find((p) => p.functionCall);
     if (!functionCall) {
+      const text = parts.find((p) => p.text)?.text ?? "";
+      dbMessage.push({ type: "ASSISTANT", content: text });
       break;
     }
-
     const c = functionCall.functionCall;
     const toolResult = await executeFunction(c?.name!, c?.args!);
 
@@ -55,5 +70,5 @@ export async function runloop({ type, content, mode }: loop) {
     });
   }
 
-  return messages;
+  return dbMessage;
 }
