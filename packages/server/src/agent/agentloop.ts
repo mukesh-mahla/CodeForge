@@ -21,7 +21,7 @@ type DbMessageType = {
   content: string;
 };
 
-export async function runloop({ type, content, mode }: loop) {
+export async function runloop({ type, content, mode }: loop,onMessage:(t:string)=>void) {
   const messages: GeminiMessageType[] = [
     { role: "user", parts: [{ text: content }] },
   ];
@@ -50,7 +50,8 @@ export async function runloop({ type, content, mode }: loop) {
     );
 
     messages.push({ role: "model", parts });
-
+   const text = parts.find((p) => p.text)?.text ?? "";
+ onMessage(text)
     const functionCall = parts?.find((p) => p.functionCall);
     if (!functionCall) {
       const text = parts.find((p) => p.text)?.text ?? "";
