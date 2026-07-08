@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { streamText } from "hono/streaming";
 import { prisma } from "@nightcode/database";
 import z from "zod";
 import { zValidator } from "@hono/zod-validator";
@@ -58,14 +59,18 @@ const sessionRouter = new Hono()
     });
     console.log("chat created ---------------------");
 
-    const Airesponse = await runloop(initialMessage);
-
-   const d =  await prisma.message.createMany({
-      data:Airesponse.map((m)=>({...m,sessionId:session.id,mode:initialMessage.mode}))
-    })
-    console.log("svaed in the db -----------------------------------------------",d)
-
-    return c.json({ message: "session created successfully", session }, 201);
+    return streamText(c, async (stream) => {
+      const Airesponse = await runloop(initialMessage, async (chunk) => {
+        await stream.write(JSON.stringify(chunk) + "\n");
+      });
+      const d = await prisma.message.createMany({
+        data: Airesponse.map((m) => ({
+          ...m,
+          sessionId: session.id,
+          mode: initialMessage.mode,
+        })),
+      });
+    });
   })
   .post("/:id/messages", CreateMessageSchemaValidator, async (c) => {
     const { id } = c.req.param();
@@ -104,7 +109,7 @@ const sessionRouter = new Hono()
       data: {
         sessionId: id,
         type: Role.ASSISTANT, // Assuming the AI's response is from the assistant
-        content:  "No response from AI", // Handle cases where AI might not return content
+        content: "No response from AI", // Handle cases where AI might not return content
         mode: mode,
       },
     });

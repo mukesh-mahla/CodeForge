@@ -21,7 +21,16 @@ type DbMessageType = {
   content: string;
 };
 
-export async function runloop({ type, content, mode }: loop,onMessage:(t:string)=>void) {
+export async function runloop(
+  { type, content, mode }: loop,
+  onMessage: (chunk: {
+    type: string;
+    content?: string;
+    name?: string;
+    result?: string;
+    args?: Record<string, unknown>;
+  }) => Promise<void>,
+) {
   const messages: GeminiMessageType[] = [
     { role: "user", parts: [{ text: content }] },
   ];
@@ -50,17 +59,20 @@ export async function runloop({ type, content, mode }: loop,onMessage:(t:string)
     );
 
     messages.push({ role: "model", parts });
-   const text = parts.find((p) => p.text)?.text ?? "";
- onMessage(text)
+
     const functionCall = parts?.find((p) => p.functionCall);
     if (!functionCall) {
       const text = parts.find((p) => p.text)?.text ?? "";
+      onMessage({ type: "TEXT", content: text });
       dbMessage.push({ type: "ASSISTANT", content: text });
       break;
     }
     const c = functionCall.functionCall;
-    const toolResult = await executeFunction(c?.name!, c?.args!);
 
+    onMessage({ type: "FUNCTION_CALL", name: c?.name, args: c?.args });
+
+    const toolResult = await executeFunction(c?.name!, c?.args!);
+    onMessage({ type: "TOLL_RESULT", name: c?.name, result: toolResult });
     messages.push({
       role: "user",
       parts: [

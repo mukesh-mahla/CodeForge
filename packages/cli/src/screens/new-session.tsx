@@ -23,7 +23,7 @@ export function NewSession() {
     if (requestRef.current || !parsedState.success) return
     requestRef.current = true
     const text = parsedState.data.text
-    const data = apiClient.session.$post({
+    const data =await apiClient.session.$post({
       json: {
         title: text.slice(0, 40)!,
         cwd: process.cwd(),
@@ -34,6 +34,8 @@ export function NewSession() {
         }
       }
     })
+    
+    navigate(`/session/${}`)
   }, [])
 
 
@@ -51,6 +53,5 @@ export function NewSession() {
       <BotMessage content="hello from bot" model="opus" />
       <ErrorMessage message="oops" />
     </SessionShell>
-
   )
 }
