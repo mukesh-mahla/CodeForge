@@ -40,8 +40,7 @@ export async function runloop(
       model: "gemini-2.5-flash",
       contents: messages,
       config: {
-        systemInstruction:
-          "your a cli agent like claude code, you might be working in a codebase or you are being used to create one , so use the tool to create and read the codebase , you are a cross-platform coding agent, if your action doesnt work then try other way ",
+        systemInstruction:"your a cli agent like claude code, you might be working in a codebase or you are being used to create one , so use the tool to create and read the codebase , you are a cross-platform coding agent, if your action doesnt work then try other way ",
         tools: mode === "BUILD" ? [{ functionDeclarations: tool }] : [],
       },
     });

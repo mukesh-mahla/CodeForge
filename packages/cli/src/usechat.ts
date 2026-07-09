@@ -13,10 +13,6 @@ export async function useChat(data: dataType, onData: ChatMessage) {
     param: {
       id: data.id,
     },
-    json: {
-      content: data.content,
-      mode: data.mode,
-    },
   });
   const reader = response.body?.getReader();
   if (!reader) return;
@@ -28,12 +24,12 @@ export async function useChat(data: dataType, onData: ChatMessage) {
     }
 
     let buffer = decoder.decode(value, { stream: true });
-const lines = buffer.split("\n")
-buffer = lines.pop() ?? ""; // keep incomplete line
-    for(const line of lines){
-      if(!line) return
-      const parsedData = JSON.parse(line)
-      onData(parsedData)
+    const lines = buffer.split("\n");
+    buffer = lines.pop() ?? ""; // keep incomplete line
+    for (const line of lines) {
+      if (!line) return;
+      const parsedData = JSON.parse(line);
+      onData(parsedData);
     }
   }
 }

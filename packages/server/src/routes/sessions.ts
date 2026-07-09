@@ -62,9 +62,9 @@ const sessionRouter = new Hono()
     return c.json({message:"chat created",session})
      
   })
-  .post("/:id/messages", CreateMessageSchemaValidator, async (c) => {
+  .post("/:id/messages",  async (c) => {
     const { id } = c.req.param();
-    const { content, mode } = c.req.valid("json");
+    
 
     const session = await prisma.session.findUnique({
       where: { id },
@@ -75,23 +75,15 @@ const sessionRouter = new Hono()
       return c.json({ error: "Session not found" }, 404);
     }
 
-    
+    const lastMessage = session.messages[0]?.content!
+    const lastMessageMode = session.messages[0]?.mode!
     return streamText(c,async(stream)=>{
-      const d = await runloop({type:"USER",content,mode},async(chunk)=>{
+      const d = await runloop({type:"USER",content:lastMessage,mode:lastMessageMode},async(chunk)=>{
         stream.write(JSON.stringify(chunk)+"\n")
       })
 
-      await prisma.message.create({
-      data: {
-        sessionId: id,
-        type: Role.USER,
-        content: content,
-        mode: mode,
-      },
-    });
-
     await prisma.message.createMany({
-      data: d.map((m)=>({...m,sessionId:id,mode:mode}))
+      data: d.map((m)=>({...m,sessionId:id,mode:lastMessageMode}))
     });
 
     })
