@@ -1,49 +1,46 @@
-import { useLocation, useNavigate } from "react-router";
-
-import { useEffect, useRef } from "react";
+import { useLocation, useNavigate, useParams } from "react-router";
+import { useEffect, useRef, useState } from "react";
 import { ErrorMessage, UserMessage, BotMessage } from "../component/messages";
 import { SessionShell } from "../component/session-shell";
-import apiClient from "../lib/api-client"
+
 import z from "zod";
+import { useChat } from "../usechat";
+
 
 const messageSchema = z.object({
   text: z.string()
 })
 
+export type StreamResponse = {
+  type: "TOLL_RESULT" | "FUNCTION_CALL" | "TEXT"
+  name?: string,
+  result?: string,
+  args?: Record<string, any>,
+  content?: string
+}
+
 export function Session() {
   const navigate = useNavigate()
   const location = useLocation()
+  const param = useParams()
   const requestRef = useRef(false)
   const parsedState = messageSchema.safeParse(location.state);
+  const [chunks, setChunks] = useState<StreamResponse[]>([])
+
+  function handleUI(chunk: StreamResponse) {
+    setChunks(prev => [...prev, chunk])
+  }
 
   useEffect(() => {
- 
-    console.log(process.cwd())
-    
-    if (requestRef.current || !parsedState.success) return
+    if (requestRef.current || !parsedState.success || !param.id) return
     requestRef.current = true
     const text = parsedState.data.text
-   async function fetch(){
-     const data =await apiClient.session.$post({
-      json: {
-        title: text.slice(0, 40)!,
-        cwd: process.cwd(),
-        initialMessage: {
-          type: "USER",
-          content: text,
-          mode: "BUILD"
-        }
-      }
-    })
-    return data.json()
-   }
-    const data = fetch()
-    
-    
-}, [])
+    useChat({ id: param.id, mode: "BUILD", content: text }, handleUI)
+
+  }, [])
 
 
-   useEffect(() => {
+  useEffect(() => {
     if (!parsedState.success) {
       navigate("/", { replace: true });
     }
@@ -54,7 +51,11 @@ export function Session() {
   return (
     <SessionShell onSubmit={() => { }} inputDisable loading>
       <UserMessage message={parsedState.data.text} />
-      <BotMessage content="hello from bot" model="opus" />
+      {chunks.map((chunk, i) => {
+        if (chunk.type === "TEXT") return <BotMessage key={i} content={chunk.content!} model="gemini" />
+        if (chunk.type === "FUNCTION_CALL") return <text key={i} fg="grey"> → {chunk.name}...{chunk.args?.path ?? chunk.args?.command ?? ""}</text>
+        if (chunk.type === "TOLL_RESULT") return <text key={i} fg="green"> ✓ {chunk.name}</text>
+      })}
       <ErrorMessage message="oops" />
     </SessionShell>
   )

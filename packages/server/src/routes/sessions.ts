@@ -59,18 +59,8 @@ const sessionRouter = new Hono()
     });
     console.log("chat created ---------------------");
 
-    return streamText(c, async (stream) => {
-      const Airesponse = await runloop(initialMessage, async (chunk) => {
-        await stream.write(JSON.stringify(chunk) + "\n");
-      });
-      const d = await prisma.message.createMany({
-        data: Airesponse.map((m) => ({
-          ...m,
-          sessionId: session.id,
-          mode: initialMessage.mode,
-        })),
-      });
-    });
+    return c.json({message:"chat created",session})
+     
   })
   .post("/:id/messages", CreateMessageSchemaValidator, async (c) => {
     const { id } = c.req.param();
@@ -85,8 +75,13 @@ const sessionRouter = new Hono()
       return c.json({ error: "Session not found" }, 404);
     }
 
-    // Add the user's new message to the session
-    const userMessage = await prisma.message.create({
+    
+    return streamText(c,async(stream)=>{
+      const d = await runloop({type:"USER",content,mode},async(chunk)=>{
+        stream.write(JSON.stringify(chunk)+"\n")
+      })
+
+      await prisma.message.create({
       data: {
         sessionId: id,
         type: Role.USER,
@@ -95,29 +90,11 @@ const sessionRouter = new Hono()
       },
     });
 
-    // Prepare messages for the AI agent, including previous messages if needed for context
-    // For simplicity, let's just pass the new message for now, but this should be extended
-    // to pass the full conversation history if the AI needs it for context.
-    const aiResponseContent = await runloop({
-      type: Role.USER,
-      content: content,
-      mode: mode,
+    await prisma.message.createMany({
+      data: d.map((m)=>({...m,sessionId:id,mode:mode}))
     });
 
-    // Store the AI's response
-    const aiMessage = await prisma.message.create({
-      data: {
-        sessionId: id,
-        type: Role.ASSISTANT, // Assuming the AI's response is from the assistant
-        content: "No response from AI", // Handle cases where AI might not return content
-        mode: mode,
-      },
-    });
-
-    return c.json(
-      { message: "Message sent and AI responded", userMessage, aiMessage },
-      201,
-    );
+    })
   })
   .get("/", async (c) => {
     const data = await prisma.session.findFirst({

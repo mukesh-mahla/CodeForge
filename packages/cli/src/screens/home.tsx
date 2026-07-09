@@ -1,16 +1,34 @@
 import { useNavigate } from "react-router";
 import { Header } from "../component/header";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { Input } from "../component/Input-bar";
-import { useChat } from "../usechat";
+import apiClient from "../lib/api-client"
 
 
 export function Home() {
     const navigate = useNavigate()
-    const [datar, setDatar] = useState("")
+
 
     const handleSubmit = useCallback(async (text: string) => {
-        navigate("/sessions/new",{state:{text}})
+        const result = await apiClient.session.$post({
+            json: {
+                title: text.slice(0, 40),
+                cwd: process.cwd(),
+                initialMessage: {
+                    type: "USER",
+                    content: text,
+                    mode: "BUILD"
+                }
+            }
+        })
+
+        const data = await result.json()
+        if (typeof data === "string") {
+            throw new Error(data);
+
+        }
+        const session = data.session;
+        navigate(`sessions/${session.id}`, { state: { text } })
     }, [navigate])
 
     return (
@@ -27,7 +45,7 @@ export function Home() {
             <box width={"100%"} maxWidth={90} paddingX={2}>
                 <Input onSubmit={handleSubmit} />
             </box>
-            <text>{datar}</text>
+
         </box>
     )
 }
