@@ -80,12 +80,18 @@ const sessionRouter = new Hono()
     return streamText(c,async(stream)=>{
       const d = await runloop({type:"USER",content:lastMessage,mode:lastMessageMode},async(chunk)=>{
         stream.write(JSON.stringify(chunk)+"\n")
-      })
+      },session.cwd)
 
     await prisma.message.createMany({
-      data: d.map((m)=>({...m,sessionId:id,mode:lastMessageMode}))
+      data: d.dbMessage.map((m)=>({...m,sessionId:id,mode:lastMessageMode}))
     });
-
+    await prisma.session.update({
+      where:{
+        id:session.id
+      },
+      data:{
+      cwd:d.newCwd
+    }})
     })
   })
   .get("/", async (c) => {

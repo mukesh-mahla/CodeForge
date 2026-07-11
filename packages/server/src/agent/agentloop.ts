@@ -30,7 +30,9 @@ export async function runloop(
     result?: string;
     args?: Record<string, unknown>;
   }) => Promise<void>,
+  cwd: string,
 ) {
+  let newCwd = cwd
   const messages: GeminiMessageType[] = [
     { role: "user", parts: [{ text: content }] },
   ];
@@ -40,7 +42,8 @@ export async function runloop(
       model: "gemini-2.5-flash",
       contents: messages,
       config: {
-        systemInstruction:"your a cli agent like claude code, you might be working in a codebase or you are being used to create one , so use the tool to create and read the codebase , you are a cross-platform coding agent, if your action doesnt work then try other way ",
+        systemInstruction:
+          "your a cli agent like claude code, you might be working in a codebase or you are being used to create one , so use the tool to create and read the codebase , you are a cross-platform coding agent, if your action doesnt work then try other way ",
         tools: mode === "BUILD" ? [{ functionDeclarations: tool }] : [],
       },
     });
@@ -70,17 +73,19 @@ export async function runloop(
 
     onMessage({ type: "FUNCTION_CALL", name: c?.name, args: c?.args });
 
-    const toolResult = await executeFunction(c?.name!, c?.args!);
-    onMessage({ type: "TOLL_RESULT", name: c?.name, result: toolResult });
+    const toolResult = await executeFunction(c?.name!, c?.args!, newCwd);
+    onMessage({ type: "TOLL_RESULT", name: c?.name, result: toolResult.output });
     messages.push({
       role: "user",
       parts: [
         {
-          functionResponse: { name: c?.name, response: { result: toolResult } },
+          functionResponse: { name: c?.name, response: { result: toolResult.output } },
         },
       ],
     });
+    newCwd = toolResult.cwd ?? newCwd
   }
+  
 
-  return dbMessage;
+  return {dbMessage,newCwd};
 }

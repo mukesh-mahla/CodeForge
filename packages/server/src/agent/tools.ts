@@ -1,5 +1,6 @@
-import { Type } from "@google/genai";
-
+import {  Type } from "@google/genai";
+import { mkdir } from "node:fs/promises";
+import path from "path";
 const readFile = {
   name: "read_file",
   description: "read a file",
@@ -51,28 +52,66 @@ const usebash = {
 
 export const tool = [readFile, writeFile, usebash];
 
-export async function executeFunction(name: string, args: Record<string, any>) {
+export async function executeFunction(
+  name: string,
+  args: Record<string, any>,
+  cwd: string,
+) {
   if (name === "read_file") {
-    const res = Bun.file(args.path);
+    const filePath = path.resolve(cwd, args.path);
+    const res = Bun.file(filePath);
+    if (!(await res.exists())) {
+      return {
+        output: `File not found: ${filePath}`,
+        cwd,
+      };
+    }
     const result = await res.text();
-    return result;
+    return { output: result };
   } else if (name === "write_file") {
-    await Bun.write(args.path, args.content);
-    return "written succesfully";
+    const filePath = path.resolve(cwd, args.path);
+
+    await mkdir(path.dirname(filePath), {
+    recursive: true,
+});
+    await Bun.write(filePath, args.content);
+
+    return {
+      output: "written succesfully",
+    };
   } else if (name === "use_bash") {
+    const command: string = args.command;
+    if (command.startsWith("cd ")) {
+      const target = command.slice(3).trim();
+      const newCwd = path.resolve(cwd, target);
+      const stat = await Bun.file(newCwd).stat();
+
+      if (!stat || !stat.isDirectory()) {
+        return {
+          output: `Directory does not exist: ${target}`,
+          cwd,
+        };
+      }
+
+      return { output: `cwd is changed to ${newCwd}`, cwd: newCwd };
+    }
     console.log(args);
+
     const proc =
       process.platform === "win32"
-        ? Bun.spawnSync(["cmd", "/c", args.command])
-        : Bun.spawnSync(["bash", "-c", args.command]);
+        ? Bun.spawnSync(["cmd", "/c", args.command], {
+            cwd: cwd,
+          })
+        : Bun.spawnSync(["bash", "-c", args.command], { cwd });
     console.log(proc.stdout.toString());
     console.log(proc.stderr.toString());
     console.log(proc.exitCode);
     if (proc.exitCode !== 0) {
-      return `Command failed:
-${proc.stderr.toString()}`;
+      return {
+        output: `Command failed:${proc.stderr.toString()}`,
+      };
     }
-    return proc.stdout.toString();
+    return { output: proc.stdout.toString() };
   }
-  return "unknown tool";
+  return { output: "unknown tool" };
 }
