@@ -1,4 +1,4 @@
-import {  Type } from "@google/genai";
+import { Type } from "@google/genai";
 import { mkdir } from "node:fs/promises";
 import path from "path";
 const readFile = {
@@ -35,6 +35,29 @@ const writeFile = {
   },
 };
 
+const UpdateFile = {
+  name: "update_file",
+  description: "update in a file",
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      path: {
+        type: Type.STRING,
+        description: "path for the specific file",
+      },
+      OldContent: {
+        type: Type.STRING,
+        description: "content that needs to be replaced",
+      },
+      newContent: {
+        type: Type.STRING,
+        description: "new content the overwrite the old content",
+      },
+    },
+    required: ["path", "OldContent", "newContent"],
+  },
+};
+
 const usebash = {
   name: "use_bash",
   description: "use bash for running a command, whichever you think is needed",
@@ -50,7 +73,7 @@ const usebash = {
   },
 };
 
-export const tool = [readFile, writeFile, usebash];
+export const tool = [readFile, writeFile, UpdateFile, usebash];
 
 export async function executeFunction(
   name: string,
@@ -72,13 +95,35 @@ export async function executeFunction(
     const filePath = path.resolve(cwd, args.path);
 
     await mkdir(path.dirname(filePath), {
-    recursive: true,
-});
+      recursive: true,
+    });
     await Bun.write(filePath, args.content);
 
     return {
       output: "written succesfully",
     };
+  } else if (name === "update_file") {
+    const filePath = path.resolve(cwd, args.path);
+    const file = await Bun.file(filePath).text();
+    if (!file.includes(args.OldContent)) {
+      return {
+        output: "Old content not found",
+        cwd,
+      };
+    }
+
+    const occurrences = file.split(args.OldContent).length - 1;
+
+    if (occurrences !== 1) {
+      return {
+        output: `Expected 1 match but found ${occurrences}`,
+        cwd,
+      };
+    }
+    const update = file.replace(args.OldContent, args.newContent);
+
+    await Bun.write(filePath, update);
+    return { output: "updated succefully" };
   } else if (name === "use_bash") {
     const command: string = args.command;
     if (command.startsWith("cd ")) {
@@ -103,9 +148,11 @@ export async function executeFunction(
             cwd: cwd,
           })
         : Bun.spawnSync(["bash", "-c", args.command], { cwd });
+
     console.log(proc.stdout.toString());
     console.log(proc.stderr.toString());
     console.log(proc.exitCode);
+
     if (proc.exitCode !== 0) {
       return {
         output: `Command failed:${proc.stderr.toString()}`,

@@ -35,8 +35,7 @@ export function Session() {
     if (requestRef.current || !parsedState.success || !param.id) return
     requestRef.current = true
     const text = parsedState.data.text
-    useChat({ id: param.id, mode: "BUILD", content: text }, handleUI)
-
+    useChat({ id: param.id, mode: "BUILD", content: text }, handleUI,true)
   }, [])
 
 
@@ -48,8 +47,12 @@ export function Session() {
 
   if (!parsedState.success) return null;
 
+  const HandleSubmit = (text:string)=>{
+      useChat({id:param.id!,mode:"BUILD",content:text},handleUI,false)
+  }
+
   return (
-    <SessionShell onSubmit={() => { }} inputDisable loading>
+    <SessionShell onSubmit= {(text)=> HandleSubmit(text)} inputDisable loading>
       <UserMessage message={parsedState.data.text} />
       {chunks.map((chunk, i) => {
         if (chunk.type === "TEXT") return <BotMessage key={i} content={chunk.content!} model="gemini" />

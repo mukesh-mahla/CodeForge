@@ -1,14 +1,13 @@
 import { GoogleGenAI, type Part } from "@google/genai";
 import { executeFunction, tool } from "./tools";
-import type { Role } from "@nightcode/database/enums";
+import type { Mode, Role } from "@nightcode/database/enums";
 const GEMINI_API_KEY = process.env.GOOGLE_AI_API_KEY;
 
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
-interface loop {
-  type: "USER" | "ASSISTANT" | "ERROR";
+export interface loop {
+  role: "USER" | "ASSISTANT" | "ERROR";
   content: string;
-  mode: "BUILD" | "PLAN";
 }
 
 type GeminiMessageType = {
@@ -22,7 +21,9 @@ type DbMessageType = {
 };
 
 export async function runloop(
-  { type, content, mode }: loop,
+  history: loop[],
+  mode:Mode,
+   cwd: string,
   onMessage: (chunk: {
     type: string;
     content?: string;
@@ -30,12 +31,12 @@ export async function runloop(
     result?: string;
     args?: Record<string, unknown>;
   }) => Promise<void>,
-  cwd: string,
+ 
 ) {
   let newCwd = cwd
-  const messages: GeminiMessageType[] = [
-    { role: "user", parts: [{ text: content }] },
-  ];
+
+  const messages: GeminiMessageType[] = history.map((m)=>({role: m.role === "USER" ? "user" : "model",parts:[{text:m.content}]}))
+
   const dbMessage: DbMessageType[] = [];
   while (true) {
     const result = await ai.models.generateContent({
