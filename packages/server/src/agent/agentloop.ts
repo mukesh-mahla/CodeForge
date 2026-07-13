@@ -1,6 +1,7 @@
 import { GoogleGenAI, type Part } from "@google/genai";
 import { executeFunction, tool } from "./tools";
 import type { Mode, Role } from "@nightcode/database/enums";
+import { systemPropmpt } from "./prompt";
 const GEMINI_API_KEY = process.env.GOOGLE_AI_API_KEY;
 
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
@@ -43,8 +44,7 @@ export async function runloop(
       model: "gemini-2.5-flash",
       contents: messages,
       config: {
-        systemInstruction:
-          "your a cli agent like claude code, you might be working in a codebase or you are being used to create one , so use the tool to create and read the codebase , you are a cross-platform coding agent, if your action doesnt work then try other way ",
+        systemInstruction:systemPropmpt(cwd),
         tools: mode === "BUILD" ? [{ functionDeclarations: tool }] : [],
       },
     });
@@ -65,7 +65,7 @@ export async function runloop(
 
     const functionCall = parts?.find((p) => p.functionCall);
     if (!functionCall) {
-      const text = parts.find((p) => p.text)?.text ?? "";
+      const text = parts.filter(p => p.text).map(p => p.text).join("") ?? "";
       onMessage({ type: "TEXT", content: text });
       dbMessage.push({ type: "ASSISTANT", content: text });
       break;

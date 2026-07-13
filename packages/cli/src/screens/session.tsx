@@ -1,5 +1,5 @@
 import { useLocation, useNavigate, useParams } from "react-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ErrorMessage, UserMessage, BotMessage } from "../component/messages";
 import { SessionShell } from "../component/session-shell";
 
@@ -22,6 +22,7 @@ export type StreamResponse = {
 export function Session() {
   const navigate = useNavigate()
   const location = useLocation()
+  
   const param = useParams()
   const requestRef = useRef(false)
   const parsedState = messageSchema.safeParse(location.state);
@@ -45,14 +46,16 @@ export function Session() {
     }
   }, [parsedState.success, navigate]);
 
+const HandleSubmit = useCallback((text:string)=>{
+      useChat({id:param.id!,mode:"BUILD",content:text},handleUI,false)
+
+  },[])
   if (!parsedState.success) return null;
 
-  const HandleSubmit = (text:string)=>{
-      useChat({id:param.id!,mode:"BUILD",content:text},handleUI,false)
-  }
+  
 
   return (
-    <SessionShell onSubmit= {(text)=> HandleSubmit(text)} inputDisable loading>
+    <SessionShell onSubmit= {(text)=> HandleSubmit(text)} loading>
       <UserMessage message={parsedState.data.text} />
       {chunks.map((chunk, i) => {
         if (chunk.type === "TEXT") return <BotMessage key={i} content={chunk.content!} model="gemini" />

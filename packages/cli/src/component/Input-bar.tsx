@@ -47,6 +47,7 @@ const dialog = useDialog()
         }
         const text = textarea.plainText.trim()
         if (text.length === 0) return
+        textarea.setText("")
         onSubmit(text)
     }, [])
 
@@ -66,6 +67,7 @@ const dialog = useDialog()
             textarea?.insertText(command.value + " ")
         }
     }, [renderer, toast])
+
     const handleCommandExecute = useCallback((index: number) => {
         const command = resolveCommand(index)
         handleCommand(command)
