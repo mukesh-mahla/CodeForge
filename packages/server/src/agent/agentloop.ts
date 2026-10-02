@@ -39,6 +39,7 @@ export async function runloop(
   const messages: GeminiMessageType[] = history.map((m)=>({role: m.role === "USER" ? "user" : "model",parts:[{text:m.content}]}))
 
   const dbMessage: DbMessageType[] = [];
+
   while (true) {
     const result = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -86,7 +87,5 @@ export async function runloop(
     });
     newCwd = toolResult.cwd ?? newCwd
   }
-  
-
   return {dbMessage,newCwd};
 }
