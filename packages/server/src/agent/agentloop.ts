@@ -45,7 +45,7 @@ export async function runloop(
       model: "gemini-2.5-flash",
       contents: messages,
       config: {
-        systemInstruction:systemPropmpt(cwd),
+        systemInstruction:systemPropmpt(newCwd),
         tools: mode === "BUILD" ? [{ functionDeclarations: tool }] : [],
       },
     });
